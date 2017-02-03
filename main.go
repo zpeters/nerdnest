@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -8,11 +9,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 	"strconv"
 	"strings"
-)
 
-import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -38,6 +39,11 @@ type Thermostat struct {
 	AmbientTempF int    `json:"ambient_temperature_f"`
 	HVACState    string `json:"hvac_state"`
 	StructureID  string `json:"structure_id"`
+}
+
+type JResponse struct {
+	AccessToken string `json:"access_token"`
+	Expires     int    `json:"expires_in"`
 }
 
 func (t *Thermostat) Refresh() {
@@ -134,6 +140,59 @@ func (t Thermostat) String() string {
 		t.StructureID)
 }
 
+func register() {
+	fmt.Printf("Registering...\n")
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("1. Enter Product ID: ")
+	productId, _ := reader.ReadString('\n')
+	productId = strings.TrimSpace(productId)
+
+	fmt.Print("2. Enter Client Secret: ")
+	clientSecret, _ := reader.ReadString('\n')
+	clientSecret = strings.TrimSpace(clientSecret)
+
+	fmt.Print("3. Enter PIN: ")
+	pin, _ := reader.ReadString('\n')
+	pin = strings.TrimSpace(pin)
+
+	fmt.Printf("4. Posting...\n")
+
+	postUrl := "https://api.home.nest.com/oauth2/access_token"
+
+	form := url.Values{}
+	form.Add("client_id", productId)
+	form.Add("client_secret", clientSecret)
+	form.Add("code", pin)
+	form.Add("grant_type", "authorization_code")
+
+	resp, err3 := http.PostForm(postUrl, form)
+	if err3 != nil {
+		log.Fatal(err3)
+	}
+	defer resp.Body.Close()
+	body, err4 := ioutil.ReadAll(resp.Body)
+	if err4 != nil {
+		log.Fatal(err4)
+	}
+
+	var jresp JResponse
+
+	err5 := json.Unmarshal(body, &jresp)
+	if err5 != nil {
+		log.Fatal(err5)
+	}
+
+	if jresp.AccessToken == "" {
+		log.Printf("Couldn't register\n")
+		log.Fatalf("Last respones: %s", string(body))
+	} else {
+		fmt.Printf("Please set the following access code in your configuration\n")
+		fmt.Printf("%s\n", jresp.AccessToken)
+	}
+
+}
+
 func main() {
 	var cmdAway = &cobra.Command{
 		Use:   "away",
@@ -168,7 +227,15 @@ func main() {
 		},
 	}
 
+	var cmdRegister = &cobra.Command{
+		Use:   "register",
+		Short: "Register with nest",
+		Run: func(cmd *cobra.Command, args []string) {
+			register()
+		},
+	}
+
 	var rootCmd = &cobra.Command{Use: "nest"}
-	rootCmd.AddCommand(cmdAway, cmdStatus, cmdTemp)
+	rootCmd.AddCommand(cmdAway, cmdStatus, cmdTemp, cmdRegister)
 	rootCmd.Execute()
 }
