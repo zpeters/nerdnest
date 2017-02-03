@@ -7,16 +7,11 @@ Control your Nest device from the command line
 
 # Setup
 
-## Enable developer mode
-https://github.com/zpeters/nerdnest/wiki/Nest-Developer-Account
-
-
-Need to add instructions to register the cmd app
-...
-
-WORK IN PROGRESS
-- Turn on dev in nest
--  download or compile
--  list device
-- create config 
-- profit
+1. Enable developer mode
+  - https://github.com/zpeters/nerdnest/wiki/Nest-Developer-Account
+2. Register your device with your developer account
+  - https://github.com/zpeters/nerdnest/wiki/Registering-your-nest-device
+3. Choose the device you want to control
+  - TBD
+  
+  # Basic Usage
