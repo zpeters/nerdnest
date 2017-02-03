@@ -8,10 +8,9 @@ Control your Nest device from the command line
 # Setup
 
 ## Enable developer mode
-Before nerdnest can talk to your nest device you need to create a nest developer account.  It is a quick and easy process, you'll be started in no time!
-- Go to https://developers.nest.com/ and sign up for the developer account
-- Click on the "Products" tab and add a new Product
-...
+https://github.com/zpeters/nerdnest/wiki/Nest-Developer-Account
+
+
 Need to add instructions to register the cmd app
 ...
 
