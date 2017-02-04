@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jmoiron/jsonq"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -140,6 +141,34 @@ func (t Thermostat) String() string {
 		t.StructureID)
 }
 
+func listDevices() {
+	resp, err := http.Get("https://developer-api.nest.com/devices/" + "?auth=" + viper.GetString("accesstoken"))
+	if err != nil {
+		log.Fatalf("Error: %v\n", err)
+	}
+	defer resp.Body.Close()
+
+	body, err2 := ioutil.ReadAll(resp.Body)
+	if err2 != nil {
+		log.Fatalf("Error: %v\n", err2)
+	}
+
+	data := map[string]interface{}{}
+	dec := json.NewDecoder(strings.NewReader(string(body)))
+	dec.Decode(&data)
+	jq := jsonq.NewQuery(data)
+
+	obj, err := jq.Object("thermostats")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for k, v := range obj {
+		fmt.Printf("%s: %s\n", v.(map[string]interface{})["where_name"], k)
+	}
+
+}
+
 func register() {
 	fmt.Printf("Registering...\n")
 	reader := bufio.NewReader(os.Stdin)
@@ -235,7 +264,15 @@ func main() {
 		},
 	}
 
-	var rootCmd = &cobra.Command{Use: "nest"}
-	rootCmd.AddCommand(cmdAway, cmdStatus, cmdTemp, cmdRegister)
+	var cmdList = &cobra.Command{
+		Use:   "list",
+		Short: "List devices",
+		Run: func(cmd *cobra.Command, args []string) {
+			listDevices()
+		},
+	}
+
+	var rootCmd = &cobra.Command{Use: "nerdnest"}
+	rootCmd.AddCommand(cmdAway, cmdStatus, cmdTemp, cmdRegister, cmdList)
 	rootCmd.Execute()
 }
