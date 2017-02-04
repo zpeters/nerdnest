@@ -18,7 +18,7 @@ Control your Nest device from the command line
   - CURRENTDIRECTORY/nerdnest.toml
   - _Submit a new issue for additional paths_
 
-# Basic Usage
+# Usage
 ```
 Usage:
   nerdnest [command]
@@ -35,3 +35,47 @@ Flags:
 
 Use "nerdnest [command] --help" for more information about a command.
 ```
+
+# Current Status
+```
+./nerdnest status
+Name: Nest
+Current Temp: 69
+Target Temp: 69
+Humidity: 45
+State: off
+Device ID: KoTA9-raY9xdYrYY036u2rgaeP_lJ-mg
+Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
+```
+
+# Set away status
+No output is sent after the command runs
+```
+./nerdnest away home
+./nerdnest away home
+ ```
+
+# Set temperature
+```
+./nerdnest temp 70
+./nerdnest status
+Name: Nest
+Current Temp: 69
+Target Temp: 70
+Humidity: 45
+State: heating
+Device ID: KoTA9-raY9xdYrYY036u2rgaeP_lJ-mg
+Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
+
+./nerdnest temp 68
+./nerdnest status
+Name: Nest
+Current Temp: 69
+Target Temp: 68
+Humidity: 45
+State: off
+Device ID: KoTA9-raY9xdYrYY036u2rgaeP_lJ-mg
+Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
+```
+
+
