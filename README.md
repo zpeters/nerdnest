@@ -7,11 +7,31 @@ Control your Nest device from the command line
 
 # Setup
 
-1. Enable developer mode
+1. Enable developer mode and allow access to your nest
   - https://github.com/zpeters/nerdnest/wiki/Nest-Developer-Account
-2. Register your device with your developer account
-  - https://github.com/zpeters/nerdnest/wiki/Registering-your-nest-device
+2. Register nerdnest with your developer account
+  - https://github.com/zpeters/nerdnest/wiki/Registering-nerdnest-with-your-account
 3. Choose the device you want to control
-  - TBD
-  
-  # Basic Usage
+  - https://github.com/zpeters/nerdnest/wiki/Select-your-Nest-Device
+4. Make sure your settings from step 2 and 3 are saved into your nerdnest.toml file.  This file can be in:
+  - $HOME/.nerdnest/nerdnest.toml
+  - CURRENTDIRECTORY/nerdnest.toml
+  - _Submit a new issue for additional paths_
+
+# Basic Usage
+```
+Usage:
+  nerdnest [command]
+
+Available Commands:
+  away        'home' or 'away'
+  status      Current Status
+  temp        Set target temp
+  register    Register with nest
+  list        List devices
+
+Flags:
+  -h, --help   help for nest
+
+Use "nerdnest [command] --help" for more information about a command.
+```
