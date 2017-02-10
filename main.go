@@ -214,7 +214,7 @@ func register() {
 
 	if jresp.AccessToken == "" {
 		log.Printf("Couldn't register\n")
-		log.Fatalf("Last respones: %s", string(body))
+		log.Fatalf("Last responses: %s", string(body))
 	} else {
 		fmt.Printf("Please set the following access code in your configuration\n")
 		fmt.Printf("%s\n", jresp.AccessToken)
