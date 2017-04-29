@@ -78,4 +78,32 @@ Device ID: KoTA9-raY9xdYrYY036u2rgaeP_lJ-mg
 Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
 ```
 
+# Configuration keys
+accesstoken = "ACCESSTOKEN"
 
+mythermostat = "MYDEVICEID"
+
+units = "[cCfF]"
+
+# Choosing units for temperature
+By default nerdnest uses Farenheit for temperature both to display the status and when setting temperature. You can
+override this behavior by adding a configuration key called units and setting it to either "c" or "C".
+
+For Farenheit you must specify the temperature in whole numbers e.g. 70, 75
+For Celcius you can specify half units as well e.g. 19, 20.5, 23.5
+
+# Building from source
+
+- Get golang: https://golang.org
+- Setup golang (see above)
+- Download this project (git clone or download zip)
+- Create subdirectory bin in the project directory
+- Look in cross-compile.sh and take the command line for your platform
+- Run the command
+- For any dependencies not found, run go get <dependency> e.g.
+```
+go get github.com/jmoiron/jsonq
+```
+
+- Your binary will be in the bin directory
+- Optionally you can just run cross-compile.sh and you will have 4 binaries - one for each platform.

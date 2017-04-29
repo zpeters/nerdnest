@@ -19,13 +19,19 @@ import (
 	"github.com/spf13/viper"
 )
 
+var configPath = os.Getenv("HOME")+"/.nerdnest"
+var configName = "nerdnest"
+var fullConfigPath = configPath+"/"+configName+".toml"
+
 func init() {
 	viper.SetEnvPrefix("nest")
-	viper.SetConfigName("nerdnest")
-	viper.AddConfigPath("$HOME/.nerdnest")
+	viper.SetConfigName(configName)
+	viper.AddConfigPath(configPath)
 	viper.AddConfigPath(".")
+	viper.SetDefault("units","F")
 	err := viper.ReadInConfig()
-	if err != nil {
+
+	if err != nil && os.Args[1] != "register"{
 		fmt.Println("Please make sure you have created a config file")
 		fmt.Println("See https://github.com/zpeters/nerdnest/ for examples")
 		log.Fatalf("Fatal error config file: %s \n", err)
@@ -37,7 +43,9 @@ type Thermostat struct {
 	DeviceId     string `json:"device_id"`
 	Name         string
 	TargetTempF  int    `json:"target_temperature_f"`
+	TargetTempC  float32    `json:"target_temperature_c"`
 	AmbientTempF int    `json:"ambient_temperature_f"`
+	AmbientTempC float32    `json:"ambient_temperature_c"`
 	HVACState    string `json:"hvac_state"`
 	StructureID  string `json:"structure_id"`
 }
@@ -98,12 +106,21 @@ func (t Thermostat) SetAway(status string) {
 	}
 }
 
-func (t Thermostat) SetTemp(temperature int) {
+func (t Thermostat) SetTemp(temperature float64) {
 	t.SetAway("home")
 
 	client := &http.Client{}
-	body := fmt.Sprintf("{\"target_temperature_f\": %d}", temperature)
 
+	units := viper.GetString("units")
+
+	var body string
+
+	if units == "c" || units == "C"{
+		body = fmt.Sprintf("{\"target_temperature_c\": %f}", temperature)
+	} else {
+		temperature_f := int(temperature)
+		body = fmt.Sprintf("{\"target_temperature_f\": %d}", temperature_f)
+	}
 	req, err := http.NewRequest("PUT", "https://developer-api.nest.com/devices/thermostats/"+t.DeviceId+"?auth="+viper.GetString("accesstoken"), strings.NewReader(body))
 	if err != nil {
 		log.Fatalf("Error: %v\n", err)
@@ -131,7 +148,20 @@ func (t Thermostat) SetTemp(temperature int) {
 }
 
 func (t Thermostat) String() string {
-	return fmt.Sprintf("Name: %s\nCurrent Temp: %d\nTarget Temp: %d\nHumidity: %d\nState: %s\nDevice ID: %s\nStructure ID: %s",
+	units := viper.GetString("units")
+
+	if units == "c" || units == "C" {
+		return fmt.Sprintf("Name: %s\nCurrent Temp: %.1fC\nTarget Temp: %.1fC\nHumidity: %d\nState: %s\nDevice ID: %s\nStructure ID: %s",
+			t.Name,
+			t.AmbientTempC,
+			t.TargetTempC,
+			t.Humidity,
+			t.HVACState,
+			t.DeviceId,
+			t.StructureID)
+	}
+
+	return fmt.Sprintf("Name: %s\nCurrent Temp: %dF\nTarget Temp: %dF\nHumidity: %d\nState: %s\nDevice ID: %s\nStructure ID: %s",
 		t.Name,
 		t.AmbientTempF,
 		t.TargetTempF,
@@ -139,6 +169,7 @@ func (t Thermostat) String() string {
 		t.HVACState,
 		t.DeviceId,
 		t.StructureID)
+
 }
 
 func listDevices() {
@@ -216,10 +247,23 @@ func register() {
 		log.Printf("Couldn't register\n")
 		log.Fatalf("Last responses: %s", string(body))
 	} else {
-		fmt.Printf("Please set the following access code in your configuration\n")
-		fmt.Printf("%s\n", jresp.AccessToken)
-	}
+		if _, err := os.Stat(fullConfigPath); err == nil {
+			fmt.Printf("Configuration file already exists. Please set the following access code in your configuration\n")
+			fmt.Printf("%s\n", jresp.AccessToken)
 
+		} else {
+			// file does not exist
+			fmt.Printf("Configuration file did not exist, creating\n")
+			err1 := os.MkdirAll(configPath, os.FileMode(0750))
+			if err1 != nil {
+				log.Fatal(err1)
+			}
+			err := ioutil.WriteFile(fullConfigPath, []byte("accesstoken = \"" + jresp.AccessToken + "\"\n"), 0640)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 }
 
 func main() {
@@ -247,7 +291,7 @@ func main() {
 		Use:   "temp",
 		Short: "Set target temp",
 		Run: func(cmd *cobra.Command, args []string) {
-			temp, _ := strconv.Atoi(args[0])
+			temp, _ := strconv.ParseFloat(args[0],32)
 
 			t := Thermostat{}
 			t.Refresh()
