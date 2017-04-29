@@ -80,7 +80,9 @@ Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
 
 # Configuration keys
 accesstoken = "ACCESSTOKEN"
+
 mythermostat = "MYDEVICEID"
+
 units = "[cCfF]"
 
 # Choosing units for temperature
