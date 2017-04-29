@@ -19,13 +19,18 @@ import (
 	"github.com/spf13/viper"
 )
 
+var configPath = os.Getenv("HOME")+"/.nerdnest"
+var configName = "nerdnest"
+var fullConfigPath = configPath+"/"+configName+".toml"
+
 func init() {
 	viper.SetEnvPrefix("nest")
-	viper.SetConfigName("nerdnest")
-	viper.AddConfigPath("$HOME/.nerdnest")
+	viper.SetConfigName(configName)
+	viper.AddConfigPath(configPath)
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
-	if err != nil {
+
+	if err != nil && os.Args[1] != "register"{
 		fmt.Println("Please make sure you have created a config file")
 		fmt.Println("See https://github.com/zpeters/nerdnest/ for examples")
 		log.Fatalf("Fatal error config file: %s \n", err)
@@ -216,10 +221,23 @@ func register() {
 		log.Printf("Couldn't register\n")
 		log.Fatalf("Last responses: %s", string(body))
 	} else {
-		fmt.Printf("Please set the following access code in your configuration\n")
-		fmt.Printf("%s\n", jresp.AccessToken)
-	}
+		if _, err := os.Stat(fullConfigPath); err == nil {
+			fmt.Printf("Configuration file already exists. Please set the following access code in your configuration\n")
+			fmt.Printf("%s\n", jresp.AccessToken)
 
+		} else {
+			// file does not exist
+			fmt.Printf("Configuration file did not exist, creating\n")
+			err1 := os.MkdirAll(configPath, os.FileMode(0750))
+			if err1 != nil {
+				log.Fatal(err1)
+			}
+			err := ioutil.WriteFile(fullConfigPath, []byte("accesstoken = \"" + jresp.AccessToken + "\"\n"), 0640)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
 }
 
 func main() {
