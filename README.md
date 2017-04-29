@@ -78,4 +78,16 @@ Device ID: KoTA9-raY9xdYrYY036u2rgaeP_lJ-mg
 Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
 ```
 
+# Configuration keys
+accesstoken = "ACCESSTOKEN"
 
+mythermostat = "MYDEVICEID"
+
+units = "[cCfF]"
+
+# Choosing units for temperature
+By default nerdnest uses Farenheit for temperature both to display the status and when setting temperature. You can
+override this behavior by adding a configuration key called units and setting it to either "c" or "C".
+
+For Farenheit you must specify the temperature in whole numbers e.g. 70, 75
+For Celcius you can specify half units as well e.g. 19, 20.5, 23.5
