@@ -24,6 +24,7 @@ func init() {
 	viper.SetConfigName("nerdnest")
 	viper.AddConfigPath("$HOME/.nerdnest")
 	viper.AddConfigPath(".")
+	viper.SetDefault("units","F")
 	err := viper.ReadInConfig()
 	if err != nil {
 		fmt.Println("Please make sure you have created a config file")
@@ -37,7 +38,9 @@ type Thermostat struct {
 	DeviceId     string `json:"device_id"`
 	Name         string
 	TargetTempF  int    `json:"target_temperature_f"`
+	TargetTempC  float32    `json:"target_temperature_c"`
 	AmbientTempF int    `json:"ambient_temperature_f"`
+	AmbientTempC float32    `json:"ambient_temperature_c"`
 	HVACState    string `json:"hvac_state"`
 	StructureID  string `json:"structure_id"`
 }
@@ -98,12 +101,21 @@ func (t Thermostat) SetAway(status string) {
 	}
 }
 
-func (t Thermostat) SetTemp(temperature int) {
+func (t Thermostat) SetTemp(temperature float64) {
 	t.SetAway("home")
 
 	client := &http.Client{}
-	body := fmt.Sprintf("{\"target_temperature_f\": %d}", temperature)
 
+	units := viper.GetString("units")
+
+	var body string
+
+	if units == "c" || units == "C"{
+		body = fmt.Sprintf("{\"target_temperature_c\": %f}", temperature)
+	} else {
+		temperature_f := int(temperature)
+		body = fmt.Sprintf("{\"target_temperature_f\": %d}", temperature_f)
+	}
 	req, err := http.NewRequest("PUT", "https://developer-api.nest.com/devices/thermostats/"+t.DeviceId+"?auth="+viper.GetString("accesstoken"), strings.NewReader(body))
 	if err != nil {
 		log.Fatalf("Error: %v\n", err)
@@ -131,7 +143,20 @@ func (t Thermostat) SetTemp(temperature int) {
 }
 
 func (t Thermostat) String() string {
-	return fmt.Sprintf("Name: %s\nCurrent Temp: %d\nTarget Temp: %d\nHumidity: %d\nState: %s\nDevice ID: %s\nStructure ID: %s",
+	units := viper.GetString("units")
+
+	if units == "c" || units == "C" {
+		return fmt.Sprintf("Name: %s\nCurrent Temp: %.1fC\nTarget Temp: %.1fC\nHumidity: %d\nState: %s\nDevice ID: %s\nStructure ID: %s",
+			t.Name,
+			t.AmbientTempC,
+			t.TargetTempC,
+			t.Humidity,
+			t.HVACState,
+			t.DeviceId,
+			t.StructureID)
+	}
+
+	return fmt.Sprintf("Name: %s\nCurrent Temp: %dF\nTarget Temp: %dF\nHumidity: %d\nState: %s\nDevice ID: %s\nStructure ID: %s",
 		t.Name,
 		t.AmbientTempF,
 		t.TargetTempF,
@@ -139,6 +164,7 @@ func (t Thermostat) String() string {
 		t.HVACState,
 		t.DeviceId,
 		t.StructureID)
+
 }
 
 func listDevices() {
@@ -247,7 +273,7 @@ func main() {
 		Use:   "temp",
 		Short: "Set target temp",
 		Run: func(cmd *cobra.Command, args []string) {
-			temp, _ := strconv.Atoi(args[0])
+			temp, _ := strconv.ParseFloat(args[0],32)
 
 			t := Thermostat{}
 			t.Refresh()
