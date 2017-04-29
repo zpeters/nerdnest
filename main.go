@@ -258,7 +258,12 @@ func register() {
 			if err1 != nil {
 				log.Fatal(err1)
 			}
-			err := ioutil.WriteFile(fullConfigPath, []byte("accesstoken = \"" + jresp.AccessToken + "\"\n"), 0640)
+
+			fmt.Print("5. Enter temperature units (C or F): ")
+			units, _ := reader.ReadString('\n')
+			units = strings.TrimSpace(units)
+
+			err := ioutil.WriteFile(fullConfigPath, []byte("accesstoken = \"" + jresp.AccessToken + "\"\nunits = \""+units+"\"\n"), 0640)
 			if err != nil {
 				log.Fatal(err)
 			}
