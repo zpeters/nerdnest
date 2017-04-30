@@ -341,8 +341,6 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			t := Thermostat{}
 
-			fmt.Printf("Args length: %d",len(args))
-
 			if len(args) == 1 {
 				t.DeviceId = args[0]
 			} else {
