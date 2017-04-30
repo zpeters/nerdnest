@@ -56,7 +56,7 @@ type JResponse struct {
 }
 
 func (t *Thermostat) Refresh() {
-	resp, err := http.Get("https://developer-api.nest.com/devices/thermostats/" + viper.GetString("mythermostat") + "?auth=" + viper.GetString("accesstoken"))
+	resp, err := http.Get("https://developer-api.nest.com/devices/thermostats/" + t.DeviceId + "?auth=" + viper.GetString("accesstoken"))
 	if err != nil {
 		log.Fatalf("Error: %v\n", err)
 	}
@@ -172,7 +172,8 @@ func (t Thermostat) String() string {
 
 }
 
-func listDevices() {
+// Generic get devices list from server
+func getDeviceList() (map[string]interface{}, error) {
 	resp, err := http.Get("https://developer-api.nest.com/devices/" + "?auth=" + viper.GetString("accesstoken"))
 	if err != nil {
 		log.Fatalf("Error: %v\n", err)
@@ -189,7 +190,13 @@ func listDevices() {
 	dec.Decode(&data)
 	jq := jsonq.NewQuery(data)
 
-	obj, err := jq.Object("thermostats")
+	return jq.Object("thermostats")
+}
+
+// List devices to user
+func listDevices() {
+
+	obj, err := getDeviceList()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -198,6 +205,47 @@ func listDevices() {
 		fmt.Printf("%s: %s\n", v.(map[string]interface{})["where_name"], k)
 	}
 
+}
+
+// Choose default device
+func setDefaultDevice(){
+	obj, err := getDeviceList()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var defaultDeviceId string
+
+	if len(obj) == 1{
+		fmt.Printf("Only one device, setting this to the default\n")
+		for k, v := range obj {
+			fmt.Printf("%s - %s\n", v.(map[string]interface{})["where_name"], k)
+			defaultDeviceId = k
+		}
+	} else {
+		fmt.Printf("Found multiple devices:\n")
+		for k, v := range obj {
+			fmt.Printf("%s - %s\n", v.(map[string]interface{})["where_name"], k)
+		}
+
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter default device ID from above list:")
+		defaultDeviceId, _ := reader.ReadString('\n')
+		defaultDeviceId = strings.TrimSpace(defaultDeviceId)
+	}
+
+	// Now write config file
+	var configString string
+	var configKeys = []string{"accesstoken","units"}
+	for _,k := range configKeys{
+		configString = configString + k +" = \"" + viper.GetString(k) + "\"\n"
+	}
+	configString = configString+ "mythermostat = \"" + defaultDeviceId + "\"\n"
+
+	err1 := ioutil.WriteFile(fullConfigPath, []byte(configString), 0640)
+	if err1 != nil {
+		log.Fatal(err1)
+	}
 }
 
 func register() {
@@ -258,7 +306,12 @@ func register() {
 			if err1 != nil {
 				log.Fatal(err1)
 			}
-			err := ioutil.WriteFile(fullConfigPath, []byte("accesstoken = \"" + jresp.AccessToken + "\"\n"), 0640)
+
+			fmt.Print("5. Enter temperature units (C or F): ")
+			units, _ := reader.ReadString('\n')
+			units = strings.TrimSpace(units)
+
+			err := ioutil.WriteFile(fullConfigPath, []byte("accesstoken = \"" + jresp.AccessToken + "\"\nunits = \""+units+"\"\n"), 0640)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -272,6 +325,11 @@ func main() {
 		Short: "'home' or 'away'",
 		Run: func(cmd *cobra.Command, args []string) {
 			t := Thermostat{}
+			if len(args) == 2 {
+				t.DeviceId = args[1]
+			} else {
+				t.DeviceId = viper.GetString("mythermostat")
+			}
 			t.Refresh()
 			t.SetAway(args[0])
 		},
@@ -282,6 +340,15 @@ func main() {
 		Short: "Current Status",
 		Run: func(cmd *cobra.Command, args []string) {
 			t := Thermostat{}
+
+			fmt.Printf("Args length: %d",len(args))
+
+			if len(args) == 1 {
+				t.DeviceId = args[0]
+			} else {
+				t.DeviceId = viper.GetString("mythermostat")
+			}
+
 			t.Refresh()
 			fmt.Println(t)
 		},
@@ -294,6 +361,13 @@ func main() {
 			temp, _ := strconv.ParseFloat(args[0],32)
 
 			t := Thermostat{}
+
+			if len(args) == 2 {
+				t.DeviceId = args[1]
+			} else {
+				t.DeviceId = viper.GetString("mythermostat")
+			}
+
 			t.Refresh()
 			t.SetAway("home")
 			t.SetTemp(temp)
@@ -316,7 +390,15 @@ func main() {
 		},
 	}
 
+	var cmdSetDefault = &cobra.Command{
+		Use:   "setdefault",
+		Short: "Set default thermostat",
+		Run: func(cmd *cobra.Command, args []string) {
+			setDefaultDevice()
+		},
+	}
+
 	var rootCmd = &cobra.Command{Use: "nerdnest"}
-	rootCmd.AddCommand(cmdAway, cmdStatus, cmdTemp, cmdRegister, cmdList)
+	rootCmd.AddCommand(cmdAway, cmdStatus, cmdTemp, cmdRegister, cmdList, cmdSetDefault)
 	rootCmd.Execute()
 }

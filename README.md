@@ -78,6 +78,48 @@ Device ID: KoTA9-raY9xdYrYY036u2rgaeP_lJ-mg
 Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
 ```
 
+# Set default device
+```
+./nerdnest setdefault
+Nest: raY9xdYrYY036u2rgaeP_lJ
+Kitchen: ku34h5kjefhkdsjfhsdf
+Enter default device ID from above list: ku34h5kjefhkdsjfhsdf 
+
+./nerdnest status
+Name: Kitchen
+Current Temp: 69
+Target Temp: 70
+Humidity: 45
+State: heating
+Device ID: ku34h5kjefhkdsjfhsdf
+Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
+
+./nerdnest status ku34h5kjefhkdsjfhsdf
+Name: Nest
+Current Temp: 69
+Target Temp: 68
+Humidity: 45
+State: off
+Device ID: KoTA9-raY9xdYrYY036u2rgaeP_lJ-mg
+Structure ID: Suha_CVEVHdOreQFLWC-XlHaPXSRHcEwOb8dKkwYIjcVN0XCBSnKLQ
+```
+
+# Multiple device support
+All commands that interact with a Nest can either use the default device from your config file or you can specify a device ID
+e.g.
+```
+./nerdnest temp 70
+./nerdnest temp 75 ku34h5kjefhkdsjfhsdf
+./nerdnest status
+./nerdnset status ku34h5kjefhkdsjfhsdf
+```
+To set the default device, even you only have one, run the setdefault command:
+```
+./nerdnest setdefault
+Nest: raY9xdYrYY036u2rgaeP_lJ
+Kitchen: ku34h5kjefhkdsjfhsdf
+Enter default device ID from above list: ku34h5kjefhkdsjfhsdf
+```
 # Configuration keys
 accesstoken = "ACCESSTOKEN"
 
