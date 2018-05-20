@@ -2,8 +2,8 @@ language: go
 sudo: true
 
 addons:
-        apt:
-                update: true
+  apt:
+    update: true
 
 before_install:
   - sudo apt-get update -y
@@ -13,6 +13,9 @@ before_install:
 install:
   - dep ensure
   - go get golang.org/x/tools/cmd/goimports
+
+script:
+  - make build
 
 notifications:
   email:
