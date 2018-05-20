@@ -23,10 +23,12 @@ dep:
 build: ${DEFAULT_GOOS}
 
 fmt:
-	goimports -w main.go
+	goimports -w ./cmd/
+	goimports -w ./internal/
 
 vet:
-	go vet -x
+	go vet ./cmd/...
+	go vet ./internal/...
 
 clean:
 	rm -f nerdnest
@@ -34,11 +36,11 @@ clean:
 
 ### build for different platforms
 linux:
-	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-linux-${GOARCH}-${VERSION}
+	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-linux-${GOARCH}-${VERSION} ./cmd/...
 mac:
-	GOOS=darwin GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-darwin-${GOARCH}-${VERSION}
+	GOOS=darwin GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-darwin-${GOARCH}-${VERSION} ./cmd/...
 windows:
-	GOOS=windows GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-windows-${GOARCH}-${VERSION}
+	GOOS=windows GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-windows-${GOARCH}-${VERSION} ./cmd/...
 
 
 ### phone to speed up performance
