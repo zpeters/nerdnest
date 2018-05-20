@@ -8,6 +8,7 @@ before_install:
 
 install:
   - dep ensure
+  - go get golang.org/x/tools/cmd/goimports
 
 notifications:
   email:
