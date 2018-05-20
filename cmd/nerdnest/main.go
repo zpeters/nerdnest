@@ -44,7 +44,7 @@ func init() {
 }
 
 // List devices to user
-func listDevices() {
+func ListDevices() {
 
 	obj, err := nest.GetDeviceList()
 	if err != nil {
@@ -58,7 +58,7 @@ func listDevices() {
 }
 
 // Choose default device
-func setDefaultDevice() {
+func SetDefaultDevice() {
 	obj, err := nest.GetDeviceList()
 	if err != nil {
 		log.Fatal(err)
@@ -98,7 +98,7 @@ func setDefaultDevice() {
 	}
 }
 
-func register() {
+func Register() {
 	fmt.Printf("Registering...\n")
 	reader := bufio.NewReader(os.Stdin)
 
@@ -226,7 +226,7 @@ func main() {
 		Use:   "register",
 		Short: "Register with nest",
 		Run: func(cmd *cobra.Command, args []string) {
-			register()
+			Register()
 		},
 	}
 
@@ -234,7 +234,7 @@ func main() {
 		Use:   "list",
 		Short: "List devices",
 		Run: func(cmd *cobra.Command, args []string) {
-			listDevices()
+			ListDevices()
 		},
 	}
 
@@ -242,7 +242,7 @@ func main() {
 		Use:   "setdefault",
 		Short: "Set default thermostat",
 		Run: func(cmd *cobra.Command, args []string) {
-			setDefaultDevice()
+			SetDefaultDevice()
 		},
 	}
 
