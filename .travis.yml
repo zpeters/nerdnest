@@ -1,6 +1,10 @@
 language: go
 sudo: true
 
+addons:
+        apt:
+                update: true
+
 before_install:
   - sudo apt-get update -y
   - sudo apt install curl -y
