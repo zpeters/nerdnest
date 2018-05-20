@@ -19,19 +19,25 @@ import (
 	"github.com/spf13/viper"
 )
 
-var configPath = os.Getenv("HOME")+"/.nerdnest"
+// injected via makefile
+var VERSION string
+var COMMIT string
+var BRANCH string
+
+// some config settings
+var configPath = os.Getenv("HOME") + "/.nerdnest"
 var configName = "nerdnest"
-var fullConfigPath = configPath+"/"+configName+".toml"
+var fullConfigPath = configPath + "/" + configName + ".toml"
 
 func init() {
 	viper.SetEnvPrefix("nest")
 	viper.SetConfigName(configName)
 	viper.AddConfigPath(configPath)
 	viper.AddConfigPath(".")
-	viper.SetDefault("units","F")
+	viper.SetDefault("units", "F")
 	err := viper.ReadInConfig()
 
-	if err != nil && os.Args[1] != "register"{
+	if err != nil && os.Args[1] != "register" {
 		fmt.Println("Please make sure you have created a config file")
 		fmt.Println("See https://github.com/zpeters/nerdnest/ for examples")
 		log.Fatalf("Fatal error config file: %s \n", err)
@@ -42,12 +48,12 @@ type Thermostat struct {
 	Humidity     int
 	DeviceId     string `json:"device_id"`
 	Name         string
-	TargetTempF  int    `json:"target_temperature_f"`
-	TargetTempC  float32    `json:"target_temperature_c"`
-	AmbientTempF int    `json:"ambient_temperature_f"`
-	AmbientTempC float32    `json:"ambient_temperature_c"`
-	HVACState    string `json:"hvac_state"`
-	StructureID  string `json:"structure_id"`
+	TargetTempF  int     `json:"target_temperature_f"`
+	TargetTempC  float32 `json:"target_temperature_c"`
+	AmbientTempF int     `json:"ambient_temperature_f"`
+	AmbientTempC float32 `json:"ambient_temperature_c"`
+	HVACState    string  `json:"hvac_state"`
+	StructureID  string  `json:"structure_id"`
 }
 
 type JResponse struct {
@@ -115,7 +121,7 @@ func (t Thermostat) SetTemp(temperature float64) {
 
 	var body string
 
-	if units == "c" || units == "C"{
+	if units == "c" || units == "C" {
 		body = fmt.Sprintf("{\"target_temperature_c\": %f}", temperature)
 	} else {
 		temperature_f := int(temperature)
@@ -208,7 +214,7 @@ func listDevices() {
 }
 
 // Choose default device
-func setDefaultDevice(){
+func setDefaultDevice() {
 	obj, err := getDeviceList()
 	if err != nil {
 		log.Fatal(err)
@@ -216,7 +222,7 @@ func setDefaultDevice(){
 
 	var defaultDeviceId string
 
-	if len(obj) == 1{
+	if len(obj) == 1 {
 		fmt.Printf("Only one device, setting this to the default\n")
 		for k, v := range obj {
 			fmt.Printf("%s - %s\n", v.(map[string]interface{})["where_name"], k)
@@ -236,11 +242,11 @@ func setDefaultDevice(){
 
 	// Now write config file
 	var configString string
-	var configKeys = []string{"accesstoken","units"}
-	for _,k := range configKeys{
-		configString = configString + k +" = \"" + viper.GetString(k) + "\"\n"
+	var configKeys = []string{"accesstoken", "units"}
+	for _, k := range configKeys {
+		configString = configString + k + " = \"" + viper.GetString(k) + "\"\n"
 	}
-	configString = configString+ "mythermostat = \"" + defaultDeviceId + "\"\n"
+	configString = configString + "mythermostat = \"" + defaultDeviceId + "\"\n"
 
 	err1 := ioutil.WriteFile(fullConfigPath, []byte(configString), 0640)
 	if err1 != nil {
@@ -311,7 +317,7 @@ func register() {
 			units, _ := reader.ReadString('\n')
 			units = strings.TrimSpace(units)
 
-			err := ioutil.WriteFile(fullConfigPath, []byte("accesstoken = \"" + jresp.AccessToken + "\"\nunits = \""+units+"\"\n"), 0640)
+			err := ioutil.WriteFile(fullConfigPath, []byte("accesstoken = \""+jresp.AccessToken+"\"\nunits = \""+units+"\"\n"), 0640)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -356,7 +362,7 @@ func main() {
 		Use:   "temp",
 		Short: "Set target temp",
 		Run: func(cmd *cobra.Command, args []string) {
-			temp, _ := strconv.ParseFloat(args[0],32)
+			temp, _ := strconv.ParseFloat(args[0], 32)
 
 			t := Thermostat{}
 
@@ -396,7 +402,17 @@ func main() {
 		},
 	}
 
+	var cmdVersion = &cobra.Command{
+		Use:   "version",
+		Short: "Show build information",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("Version: %s\n", VERSION)
+			fmt.Printf("Branch: %s\n", BRANCH)
+			fmt.Printf("Commit: %s\n", COMMIT)
+		},
+	}
+
 	var rootCmd = &cobra.Command{Use: "nerdnest"}
-	rootCmd.AddCommand(cmdAway, cmdStatus, cmdTemp, cmdRegister, cmdList, cmdSetDefault)
+	rootCmd.AddCommand(cmdAway, cmdStatus, cmdTemp, cmdRegister, cmdList, cmdSetDefault, cmdVersion)
 	rootCmd.Execute()
 }

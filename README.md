@@ -29,6 +29,7 @@ Available Commands:
   temp        Set target temp
   register    Register with nest
   list        List devices
+  version     Show build information
 
 Flags:
   -h, --help   help for nest
