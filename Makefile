@@ -34,6 +34,10 @@ clean:
 	rm -f nerdnest
 	rm -f bin/*
 
+test:
+	go test ./cmd/...
+	go test ./internal/...
+
 ### build for different platforms
 linux:
 	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-linux-${GOARCH}-${VERSION} ./cmd/...
