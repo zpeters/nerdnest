@@ -102,7 +102,7 @@ func Register() {
 	fmt.Printf("Registering...\n")
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Print("1. Enter Product ID: ")
+	fmt.Print("1. Enter Client ID: ")
 	productId, _ := reader.ReadString('\n')
 	productId = strings.TrimSpace(productId)
 
