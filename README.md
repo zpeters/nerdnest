@@ -1,3 +1,7 @@
+# DEPRECATED 
+- since the acquisition of Nest by Google this api is no longer supported
+- this project was started when many Go project structures and module idioms were still in flux, it does not represent current standards
+
 # nerdnest
 Control your Nest device from the command line
 
